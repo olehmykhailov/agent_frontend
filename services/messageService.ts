@@ -1,6 +1,7 @@
 import { PageResponse } from '@/types/common/PageResponse';
 import { MessageGetResponseType } from '@/types/messages/MessageGetResponseType';
 import api from './api';
+import { logToServer } from '@/app/actions';
 
 export const getMessages = async (
     chatId: string,
@@ -13,6 +14,7 @@ export const getMessages = async (
             params: {page, size}
         }
     );
-
+    await logToServer("Messages GET Response", data);
     return data;
 }
+

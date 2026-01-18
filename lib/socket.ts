@@ -2,6 +2,7 @@
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { refresh } from "@/services/authService";
+import { logToServer } from "@/app/actions";
 
 let stompClient: Client | null = null;
 let retryCount = 0;
@@ -16,6 +17,10 @@ export const connectSocket = (onConnect?: () => void) => {
   }
 
   const token = localStorage.getItem("accessToken");
+
+  if (!token) {
+    return;
+  }
 
   stompClient = new Client({
     webSocketFactory: () =>
@@ -74,11 +79,12 @@ export const subscribeToChat = (
   callback: (msg: any) => void
 ) => {
   if (!stompClient) return;
-
+  
   return stompClient.subscribe(
     `/topic/chat/${chatId}`,
     message => {
       callback(JSON.parse(message.body));
+      logToServer("WS", message.body);
     }
   );
 };
@@ -94,5 +100,19 @@ export const sendMessage = (
       ...payload,
     }),
   });
+};
+
+export const subscribeToVacancies = (
+  chatId: string,
+  callback: (msg: any) => void
+) => {
+  if (!stompClient) return;
+
+  return stompClient.subscribe(
+    `/topic/vacancies/${chatId}`,
+    message => {
+      callback(JSON.parse(message.body));
+    }
+  );
 };
 

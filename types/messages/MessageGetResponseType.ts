@@ -1,6 +1,8 @@
+import { RoleEnum } from "./RoleEnum";
+
 export type MessageGetResponseType = {
     id: string;
     chatId: string;
     content: string;
-    senderType: string;
+    role: RoleEnum;
 }

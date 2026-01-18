@@ -4,6 +4,8 @@ import { RefreshRequestType } from '@/types/auth/RefreshRequestType';
 import { RefreshResponseType } from '@/types/auth/RefreshResponseType';
 
 import api from './api';
+import { SignUpRequest } from '@/types/auth/SignUpRequestType';
+import { logToServer } from '@/app/actions';
 
 export const signIn = async (
   signInRequest: SignInRequest
@@ -12,6 +14,13 @@ export const signIn = async (
     "auth/sign-in",
     signInRequest
   );
+  
+  await logToServer("SignIn Response Data:", response.data);
+
+  if (!response.data.accessToken) {
+      await logToServer("ERROR: AccessToken is missing in response!", response.data);
+  }
+
   localStorage.setItem("accessToken", response.data.accessToken);
   localStorage.setItem("refreshToken", response.data.refreshToken);
   localStorage.setItem("email", response.data.email);
@@ -21,6 +30,15 @@ export const signIn = async (
   }
 
   return response.data;
+}
+
+export const signUp = async (
+  signUpRequest: SignUpRequest
+): Promise<void> => {
+  await api.post<void>(
+    "auth/sign-up",
+    signUpRequest
+  );
 }
 
 export const refresh = async (
