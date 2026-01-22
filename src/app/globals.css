@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+/* Tailwind v4 tokens via @theme may require plugin configuration. */
+/* Removing @theme inline to avoid build-time CSS at-rule errors. */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Scoped vertical scroll utility for chat areas */
+.scroll-vertical {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+}
+
+/* Firefox styling */
+.scroll-vertical {
+  scrollbar-width: thin;
+  scrollbar-color: #a3a3a3 #f1f1f1;
+}
+
+/* WebKit styling */
+.scroll-vertical::-webkit-scrollbar {
+  width: 8px;
+}
+.scroll-vertical::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.scroll-vertical::-webkit-scrollbar-thumb {
+  background: #a3a3a3;
+  border-radius: 4px;
+}
+.scroll-vertical::-webkit-scrollbar-thumb:hover {
+  background: #7a7a7a;
+}
