@@ -29,6 +29,7 @@ export const connectSocket = (onConnect?: () => void) => {
       Authorization: `Bearer ${token}`,
     },
 
+    connectionTimeout: 3000,
     reconnectDelay: 0,
     debug: () => {},
 
