@@ -113,18 +113,18 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     if (selectedChatId && isSocketConnected) {
       // Подписка на новые сообщения
       const subscription = subscribeToChat(selectedChatId, (newMessage) => {
+        // Stop loading if we receive a message from assistant
+        if (newMessage.role === RoleEnum.assistant) {
+          setIsLoadingAnswer(false);
+        }
+
+        setMessages((prev) => {
           // Check if message already exists
-          setMessages((prev) => {
-              // Stop loading if we receive a message from assistant
-              if (newMessage.role === RoleEnum.assistant) {
-                  setIsLoadingAnswer(false); 
-              }
-              
-              if (prev.some(m => m.id === newMessage.id)) {
-                  return prev;
-              }
-              return [...prev, newMessage];
-          });
+          if (prev.some((m) => m.id === newMessage.id)) {
+            return prev;
+          }
+          return [...prev, newMessage];
+        });
       });
 
       const vacanciesSubscription = subscribeToVacancies(selectedChatId, () => {
