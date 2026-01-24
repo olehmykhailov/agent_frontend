@@ -7,7 +7,7 @@ import { sendMessage } from "@/src/services/chatService";
 import { RoleEnum } from "@/src/types/messages/RoleEnum";
 
 export default function ChatInput() {
-  const { selectedChatId, addMessage, replaceMessage, setMessages } = useChat();
+  const { selectedChatId, addMessage, replaceMessage, setMessages, setIsLoadingAnswer } = useChat();
   const [text, setText] = useState("");
 
   if (!selectedChatId) return null;
@@ -23,6 +23,7 @@ export default function ChatInput() {
       content: text,
       role: RoleEnum.user
     });
+    setIsLoadingAnswer(true);
 
     const messageToSend = text;
     setText("");
@@ -40,6 +41,7 @@ export default function ChatInput() {
         console.error("Failed to send message", err);
         // Remove optimistic message on error
         setMessages((prev) => prev.filter((m) => m.id !== tempId));
+        setIsLoadingAnswer(false);
       });
   };
 

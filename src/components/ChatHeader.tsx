@@ -3,7 +3,7 @@
 import { useChat } from "./ChatProvider";
 
 export default function ChatHeader() {
-  const { selectedChatId, chats, toggleVacancies, isVacanciesOpen } = useChat();
+  const { selectedChatId, chats, toggleVacancies, isVacanciesOpen, hasNewVacancies } = useChat();
 
   const selectedChat = chats.find((c) => c.id === selectedChatId);
 
@@ -22,7 +22,7 @@ export default function ChatHeader() {
       
       <button
         onClick={toggleVacancies}
-        className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 border flex items-center gap-2
+        className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 border flex items-center gap-2 relative
           ${isVacanciesOpen 
             ? "bg-blue-50 text-blue-700 border-blue-200 shadow-inner" 
             : "bg-white text-slate-600 border-slate-200 hover:border-blue-400 hover:text-blue-600 shadow-sm hover:shadow"
@@ -30,6 +30,12 @@ export default function ChatHeader() {
       >
         <span className="text-lg">💼</span>
         {isVacanciesOpen ? "Hide Vacancies" : "Show Vacancies"}
+        {hasNewVacancies && (
+          <span className="absolute -top-1 -right-1 flex h-3 w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
+          </span>
+        )}
       </button>
     </div>
   );

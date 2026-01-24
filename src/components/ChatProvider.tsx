@@ -13,9 +13,10 @@ import {
 import { useRouter } from "next/navigation";
 import { ChatGetResponseType } from "@/src/types/chats/ChatGetResponseType";
 import { MessageGetResponseType } from "@/src/types/messages/MessageGetResponseType";
+import { RoleEnum } from "@/src/types/messages/RoleEnum";
 import { getChats, createChat as createChatService } from "@/src/services/chatService";
 import { getMessages } from "@/src/services/messageService";
-import { connectSocket, disconnectSocket, subscribeToChat } from "@/src/lib/socket";
+import { connectSocket, disconnectSocket, subscribeToChat, subscribeToVacancies } from "@/src/lib/socket";
 
 interface ChatContextType {
   chats: ChatGetResponseType[];
@@ -29,6 +30,9 @@ interface ChatContextType {
   setMessages: Dispatch<SetStateAction<MessageGetResponseType[]>>;
   replaceMessage: (tempId: string, newMsg: MessageGetResponseType) => void;
   createChat: () => Promise<void>;
+  isLoadingAnswer: boolean;
+  setIsLoadingAnswer: Dispatch<SetStateAction<boolean>>;
+  hasNewVacancies: boolean;
 }
 
 const ChatContext = createContext<ChatContextType | null>(null);
@@ -40,8 +44,15 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [isVacanciesOpen, setIsVacanciesOpen] = useState(false);
   const [messages, setMessages] = useState<MessageGetResponseType[]>([]);
+  const [hasNewVacancies, setHasNewVacancies] = useState(false);
+  const [isLoadingAnswer, setIsLoadingAnswer] = useState(false);
 
-  const toggleVacancies = () => setIsVacanciesOpen((prev) => !prev);
+  const toggleVacancies = () => {
+    setIsVacanciesOpen((prev) => {
+      if (!prev) setHasNewVacancies(false);
+      return !prev;
+    });
+  };
   
   const addMessage = useCallback((msg: MessageGetResponseType) => {
     setMessages((prev) => [...prev, msg]);
@@ -74,6 +85,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    // Reset loading state when changing chats
+    setIsLoadingAnswer(false);
+    
     const fetchMessages = async () => {
       if (selectedChatId) {
         try {
@@ -84,8 +98,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
           if (status === 401 || status === 403) {
             router.push("/auth");
           } else {
-            // Optionally log or handle other errors
-            // eslint-disable-next-line no-console
             console.error("Failed to load messages", e);
           }
         }
@@ -101,8 +113,13 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     if (selectedChatId && isSocketConnected) {
       // Подписка на новые сообщения
       const subscription = subscribeToChat(selectedChatId, (newMessage) => {
-          // Check if message already exists (to avoid duplication if we added it optimistically)
+          // Check if message already exists
           setMessages((prev) => {
+              // Stop loading if we receive a message from assistant
+              if (newMessage.role === RoleEnum.assistant) {
+                  setIsLoadingAnswer(false); 
+              }
+              
               if (prev.some(m => m.id === newMessage.id)) {
                   return prev;
               }
@@ -110,11 +127,18 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
           });
       });
 
+      const vacanciesSubscription = subscribeToVacancies(selectedChatId, () => {
+        if (!isVacanciesOpen) {
+          setHasNewVacancies(true);
+        }
+      });
+
       return () => {
         subscription?.unsubscribe();
+        vacanciesSubscription?.unsubscribe();
       };
     }
-  }, [selectedChatId, isSocketConnected]);
+  }, [selectedChatId, isSocketConnected, isVacanciesOpen]);
 
   const createChat = useCallback(async () => {
     const userId = localStorage.getItem("userId");
@@ -146,6 +170,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         setMessages,
         replaceMessage,
         createChat,
+        isLoadingAnswer,
+        setIsLoadingAnswer,
+        hasNewVacancies
       }}
     >
       {children}

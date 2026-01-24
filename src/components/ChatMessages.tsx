@@ -7,7 +7,7 @@ import { useChat } from "./ChatProvider";
 import { RoleEnum } from "@/src/types/messages/RoleEnum";
 
 export default function ChatMessages() {
-  const { selectedChatId, messages } = useChat();
+  const { selectedChatId, messages, isLoadingAnswer } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -16,7 +16,7 @@ export default function ChatMessages() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, selectedChatId]);
+  }, [messages, selectedChatId, isLoadingAnswer]);
 
   if (!selectedChatId) {
     return (
@@ -59,6 +59,11 @@ export default function ChatMessages() {
           </ReactMarkdown>
         </div>
       ))}
+      {isLoadingAnswer && (
+        <div className="bg-white p-4 rounded-2xl rounded-bl-none shadow-sm border border-slate-100 self-start">
+          <div className="w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
       <div ref={messagesEndRef} />
       {messages.length === 0 && (
          <div className="text-center text-slate-400 my-auto text-sm">No messages here yet. Say hello! 👋</div>
